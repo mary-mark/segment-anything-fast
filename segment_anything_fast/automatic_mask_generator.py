@@ -285,10 +285,10 @@ class SamAutomaticMaskGenerator:
         for points in all_points:
             # Run model on this batch
             transformed_points = self.predictor.transform.apply_coords(points, im_size)
-            in_points = torch.as_tensor(transformed_points) #, device=self.predictor.device)
+            in_points = torch.as_tensor(transformed_points.astype(np.float32)) #, device=self.predictor.device)
             nt_in_points.append(in_points)
 
-        nt_in_points = torch.nested.nested_tensor(nt_in_points, layout=torch.jagged, pin_memory=True).to(device=self.predictor.device, non_blocking=True)
+        nt_in_points = torch.nested.nested_tensor(nt_in_points, layout=torch.jagged, pin_memory=False).to(device=self.predictor.device, non_blocking=True)
         # The call to prod is a workaround to share jagged sizes between two NestedTensors.
         nt_in_labels = torch.ones_like(nt_in_points, dtype=torch.int).prod(dim=-1, keepdim=True)
         nt_in_points = nt_in_points.unsqueeze(2)
